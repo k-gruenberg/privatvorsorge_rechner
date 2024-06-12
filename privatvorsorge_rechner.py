@@ -145,13 +145,30 @@ print(f"=> Beachte hierbei, dass mit der Zeit auch dein passives Dividenden-Eink
 print("")
 
 # Dividenden-Strategie, nun Netto-Betrachtung, also mit Steuern(!):
-kapitalertragssteuer_in_prozent = 26.3750
-freibetrag_in_euro = 1000
+kapitalertragssteuer_in_prozent = 26.3750 # (in Prozent; vom Gesetzgeber festgelegt)
+freibetrag_in_euro = 1000 # (pro Jahr; vom Gesetzgeber festgelegt)
+noetige_jaehrliche_bruttorente = 0
+if jaehrliche_wunschrente < freibetrag_in_euro: # Die jährliche Wunschrente liegt unter dem Freibetrag...
+	noetige_jaehrliche_bruttorente = jaehrliche_wunschrente # ...dann ist Bruttorente == Nettorente.
+else:
+	# Es soll gelten: freibetrag_in_euro + (noetige_jaehrliche_bruttorente - freibetrag_in_euro) * (1 - 26.3750%) = jaehrliche_wunschrente
+	# Umstellen liefert: noetige_jaehrliche_bruttorente = (jaehrliche_wunschrente - freibetrag_in_euro) / (1 - 26.3750%) + freibetrag_in_euro
+	noetige_jaehrliche_bruttorente = (jaehrliche_wunschrente - freibetrag_in_euro) / (1 - kapitalertragssteuer_in_prozent/100.0) + freibetrag_in_euro
+
+notwendiges_vermoegen_in_dividendenaktien = noetige_jaehrliche_bruttorente / (angenommene_dividendenrendite_in_prozent / 100.0)
+
+notwendige_monatliche_sparrate_fuer_dividenden_strategie_ohne_wertzuwachs_der_aktien = ((noetige_jaehrliche_bruttorente/dauer_sparphase_in_jahren)/12) / (angenommene_dividendenrendite_in_prozent / 100.0)
+notwendige_konstante_monatliche_sparrate_fuer_dividenden_strategie_real = (1.0/12.0) * funktion_invertieren(sparplan_ausfuehren, notwendiges_vermoegen_in_dividendenaktien, "sparrate_initial", {"sparrate_steigerungsrate": 1.00, "wertsteigerung_anlageobjekt": 1.00 + (angenommene_inflationsrate_in_prozent/100.0), "anlage_dauer": dauer_sparphase_in_jahren})
+notwendige_wachsende_monatliche_sparrate_fuer_dividenden_strategie_real = (1.0/12.0) * funktion_invertieren(sparplan_ausfuehren, notwendiges_vermoegen_in_dividendenaktien, "sparrate_initial", {"sparrate_steigerungsrate": 1.00 + (angenommene_inflationsrate_in_prozent/100.0), "wertsteigerung_anlageobjekt": 1.00 + (angenommene_inflationsrate_in_prozent/100.0), "anlage_dauer": dauer_sparphase_in_jahren})
+
 print(f"Monatliche Rente in Höhe von {monatliche_wunschrente} Euro ({colors.CRED}netto{colors.CEND}, {kapitalertragssteuer_in_prozent}% Kapitalertragssteuer, {freibetrag_in_euro} Euro Freibetrag):")
-print(f"=> Hypothetische obere Schranke der monatlichen Sparrate = x Euro") # ToDo
-print(f"=> Nötige monatliche Sparrate (konstant) = {colors.CRED}x Euro{colors.CEND}") # ToDo
-print(f"=> Nötige monatliche Sparrate (muss jedes Jahr um {angenommene_inflationsrate_in_prozent}% erhöht werden) = {colors.CRED}x Euro{colors.CEND}") # ToDo
+print(f"=> Nötige Brutto-Rente zur Erreichung einer Netto-Rente von {monatliche_wunschrente} Euro = {noetige_jaehrliche_bruttorente/12.0} Euro")
+print(f"=> Hypothetische obere Schranke der monatlichen Sparrate = {notwendige_monatliche_sparrate_fuer_dividenden_strategie_ohne_wertzuwachs_der_aktien} Euro")
+print(f"=> Nötige monatliche Sparrate (konstant) = {colors.CRED}{notwendige_konstante_monatliche_sparrate_fuer_dividenden_strategie_real} Euro{colors.CEND}")
+print(f"=> Nötige monatliche Sparrate (muss jedes Jahr um {angenommene_inflationsrate_in_prozent}% erhöht werden) = {colors.CRED}{notwendige_wachsende_monatliche_sparrate_fuer_dividenden_strategie_real} Euro{colors.CEND}")
 print(f"=> Beachte hierbei, dass mit der Zeit auch dein passives Dividenden-Einkommen steigt. Du kannst dieses natürlich zur Tilgung deiner Sparrate verwenden, also reinvestieren!")
+
+# Dividenden-Strategie, Vor- und Nachteile:
 print("")
 print("=> Vor- und Nachteile:")
 print(f"(+) Vorteilhaft ist, dass zu erwarten ist, dass sich die Dividenden, also deine Rente, auch in deiner Rentenzeit erhöhen und an die Inflation anpassen werden.")
