@@ -94,6 +94,9 @@ print(f"Es wird für sämtliche Berechnungen eine jährliche Inflation in Höhe 
 if inflations_anpassung in ["j", "J"]:
 	monatliche_wunschrente = monatliche_wunschrente * ( (1.0 + angenommene_inflationsrate_in_prozent/100.0)**dauer_sparphase_in_jahren )
 	print(f"Es wird nun eine inflationsangepasste Wunschrente von {monatliche_wunschrente} Euro/Monat für das Jahr {renteneintritts_jahr} angenommen.")
+	# Berechne und zeige außerdem wie hoch die Rente inflationsangepasst zum Renten-ENDE(!) sein müsste:
+	noetige_inflationsangepasste_rente_zum_rentenende = monatliche_wunschrente * ( (1.0 + angenommene_inflationsrate_in_prozent/100.0)**dauer_rentenphase_in_jahren ) # Achtung(!): monatliche_wunschrente wurde soeben bereits an die Inflation in der Sparphase angepasst!!!
+	print(f"{dauer_rentenphase_in_jahren} Jahre später, zum Rentenende mit {lebenserwartung} im Jahre {geburts_jahr+lebenserwartung} müsste die Rente inflationsangepasst {noetige_inflationsangepasste_rente_zum_rentenende} Euro/Monat betragen (im Fall, dass die Rente in der Rentenphase mit der Inflation steigen soll).")
 
 jaehrliche_wunschrente = 12 * monatliche_wunschrente
 
@@ -176,15 +179,64 @@ print(f"(+) Du hast bereits vor Rentenbeginn ein passives Einkommen!")
 print(f"(+) Außerdem kannst du deine Dividendenaktien/-fonds problemlos vererben (abzüglich Erbschaftssteuer von 7-30 %, der Freibetrag liegt hier bei 500.000 Euro für Ehegatten und 400.000 Euro für Kinder).")
 print(f"(-) Nachteilhaft ist, dass Dividenden Schwankungen unterliegen und in Krisenzeiten auch mal ganz ausfallen können. Eine Diversifizierung der Dividenden-Aktien ist dringend anzuraten!")
 print(f"(-) Außerdem ist die Wertsteigerung von Dividenden-Aktien i.d.R. gering, wodurch kein Zinseszinseffekt eintritt und sehr hohe Summen in der Ansparphase angespart werden müssen!")
+print(f"(-) Es besteht eine Unsicherheit, wie im Jahr {renteneintritts_jahr} Kapitalerträge versteuert werden.")
 
 # ##### Besparen des MSCI World, regelmäßige Entnahme, unter Erhalt des Vermögens: #####
 print("")
-print(colors.CRED + "##### Besparen des MSCI World, regelmäßige Entnahme, unter Erhalt des Vermögens: #####" + colors.CEND)
-print("ToDo")
+print(colors.CRED + "##### Besparen des MSCI World, regelmäßige Entnahme, unter Erhalt des Vermögens (Annahmen: keine Anpassung an die Inflation während der Rentenphase, kein Entnahmeplan): #####" + colors.CEND)
+"""
+* Laut Finanztip hat der MSCI World in der Vergangenheit eine jährliche Rendite von 9,2% erzielt. (https://www.finanztip.de/indexfonds-etf/msci-world/)
+* Das Handelsblatt (vom 21.06.2024) nimmt für den für die Rente besparten ETF eine Rendite von 7,0% (nach Kosten) an.
+"""
+msci_world_rendite = 7.0
+msci_world_monatliche_rendite = 100.0 * ((1.0 + msci_world_rendite/100.0)**(1.0/12.0) - 1.0) # = 0,5654145387% bei 7,0% p.a. # = etwas weniger als msci_world_rendite / 12.0  # (Da wir versuchen, konservativ zu sein, nehmen wir natürlich die geringere Rendite, die außerdem mathematisch korrekter ist!)
+print(f"Nehmen wir nun an, dass du mit deinen monatlichen Sparbeiträgen einen ETF auf den MSCI World (oder einen vergleichbaren Fond) besparst (Sparplan).")
+print(f"Nehmen wir ferner an, dass der MSCI World eine jährliche Rendite von {msci_world_rendite}% abwirft.")
+print(f"Schließlich nehmen wir an, dass du in deiner Rentenphase jeden Monat deine Rente in Höhe von {monatliche_wunschrente} Euro (brutto/netto je nach Betrachtung, s.u.) durch den Verkauf von Anteilen entnimmst " +\
+	f"und dass du außerdem möchtest, dass sich dein im ETF befindliches Vermögen nicht verringert, sondern konstant bleibt, dass deine Entnahmen also " +\
+	f"durch die jährliche Wertsteigerung des MSCI World um {msci_world_rendite}% wieder \"genau\" ausgeglichen werden.")
+print(f"Wir nehmen außerdem an, dass kein Inflationsausgleich in der Rentenphase stattfinden soll, dass die in der Rentenphase entnommene monatliche Rente also konstant bleibt.")
+print(f"Ferner gehen wir davon aus, dass du keinen separaten Entnahmeplan durchführst, die Rente also direkt durch regelmäßige Verkäufe deiner ETF-Anteile realisierst.")
+
+# Für die monatliche Wunschrente von {monatliche_wunschrente} Euro, wie hoch muss mein Vermögen im MSCI World sein, damit
+#   das jährliche Wachstum des MSCI World von {msci_world_rendite} Prozent meine monatlichen Entnahmen in Höhe von {monatliche_wunschrente} Euro
+#   stets exakt ausgleicht?
+# => Die monatliche Entnahme {monatliche_wunschrente} muss exakt {notwendiges_vermoegen_im_msci * msci_world_monatliche_rendite} betragen!
+# => Umgestellt heißt das: notwendiges_vermoegen_im_msci = monatliche_wunschrente / msci_world_monatliche_rendite
+notwendiges_vermoegen_im_msci = monatliche_wunschrente / ( msci_world_monatliche_rendite/100.0 ) # = 17.686,1387805697 EUR bei einer monatlichen Wunschrente von 100EUR und msci_world_rendite = 7.0  # = 17.142,8571428571 EUR bei stupider Rechnung von 100/(7%/12), was allerdings eine leicht zu hohe monatliche Rendite annehmen würde!!!
+
+# Berechnung notwendige konstante monatliche Sparrate für die MSCI-World-Vermögenserhaltende-Monatliche-Entnahme-Strategie, unter der Annahme, dass das Fondsvermögen jährlich um msci_world_rendite% wächst:
+notwendige_konstante_monatliche_sparrate_fuer_msci_erhaltende_monatliche_entnahme_strategie = (1.0/12.0) * funktion_invertieren(sparplan_ausfuehren, notwendiges_vermoegen_im_msci, "sparrate_initial", {"sparrate_steigerungsrate": 1.00, "wertsteigerung_anlageobjekt": 1.00 + (msci_world_rendite/100.0), "anlage_dauer": dauer_sparphase_in_jahren})
+
+# Berechnung notwendige mit der Inflation mitwachsende monatliche Sparrate für die MSCI-World-Vermögenserhaltende-Monatliche-Entnahme-Strategie, unter der Annahme, dass das Fondsvermögen jährlich um msci_world_rendite% wächst:
+notwendige_wachsende_monatliche_sparrate_fuer_msci_erhaltende_monatliche_entnahme_strategie = (1.0/12.0) * funktion_invertieren(sparplan_ausfuehren, notwendiges_vermoegen_im_msci, "sparrate_initial", {"sparrate_steigerungsrate": 1.00 + (angenommene_inflationsrate_in_prozent/100.0), "wertsteigerung_anlageobjekt": 1.00 + (msci_world_rendite/100.0), "anlage_dauer": dauer_sparphase_in_jahren})
+
+print(f"In diesem Fall muss dein monatlicher Sparbetrag konstant {notwendige_konstante_monatliche_sparrate_fuer_msci_erhaltende_monatliche_entnahme_strategie} Euro betragen, wenn du eine monatliche Rente in Höhe von {monatliche_wunschrente} Euro (brutto) entnehmen können möchtest.")
+print(f"Lässt du deinen monatlichen Sparbetrag mit der Inflation jedes Jahr um {angenommene_inflationsrate_in_prozent}% wachsen, so genügt zu Beginn auch ein monatlicher Sparbetrag von nur {notwendige_wachsende_monatliche_sparrate_fuer_msci_erhaltende_monatliche_entnahme_strategie} Euro. Auch dann erreichst du deine monatliche Wunschrente von {monatliche_wunschrente} Euro (brutto), ohne Vermögensverlust.")
+print(f"Soll deine Rente hingegen {monatliche_wunschrente} Euro (netto) betragen, so ist dies abhängig davon, wie Kapitalerträge im Jahr {renteneintritts_jahr} (und darüber hinaus) besteuert werden, wir betrachten hierzu 3 Szenarien: (1) Kapitalertragssteuer, (2) Einkommensteuer, ledig, (3) Einkommensteuer, verheiratet:")
+print("")
+print(f"(0) Monatliche Rente in Höhe von {monatliche_wunschrente} Euro ({colors.CRED}brutto{colors.CEND}):")
+print(f"=> Nötige monatliche Sparrate (konstant) = {colors.CRED}{notwendige_konstante_monatliche_sparrate_fuer_msci_erhaltende_monatliche_entnahme_strategie} Euro{colors.CEND}")
+print(f"=> Nötige monatliche Sparrate (muss jedes Jahr um {angenommene_inflationsrate_in_prozent}% erhöht werden) = {colors.CRED}{notwendige_wachsende_monatliche_sparrate_fuer_msci_erhaltende_monatliche_entnahme_strategie} Euro{colors.CEND}")
+print("")
+print(f"(1) Monatliche Rente in Höhe von {monatliche_wunschrente} Euro ({colors.CRED}netto{colors.CEND}, {kapitalertragssteuer_in_prozent}% Kapitalertragssteuer, {freibetrag_in_euro} Euro Freibetrag):")
+print(f"=> Nötige monatliche Sparrate (konstant) = {colors.CRED}{0} Euro{colors.CEND}") # !!!ToDo!!!
+print(f"=> Nötige monatliche Sparrate (muss jedes Jahr um {angenommene_inflationsrate_in_prozent}% erhöht werden) = {colors.CRED}{0} Euro{colors.CEND}") # !!!ToDo!!!
+print("")
+print(f"(2) Monatliche Rente in Höhe von {monatliche_wunschrente} Euro ({colors.CRED}netto{colors.CEND}, progressiver persönlicher Einkommensteuersatz, ledig):")
+print(f"=> Nötige monatliche Sparrate (konstant) = {colors.CRED}{0} Euro{colors.CEND}") # !!!ToDo!!!
+print(f"=> Nötige monatliche Sparrate (muss jedes Jahr um {angenommene_inflationsrate_in_prozent}% erhöht werden) = {colors.CRED}{0} Euro{colors.CEND}") # !!!ToDo!!!
+print("")
+print(f"(3) Monatliche Rente in Höhe von {monatliche_wunschrente} Euro ({colors.CRED}netto{colors.CEND}, progressiver persönlicher Einkommensteuersatz, verheiratet):")
+print(f"=> Nötige monatliche Sparrate (konstant) = {colors.CRED}{0} Euro{colors.CEND}") # !!!ToDo!!!
+print(f"=> Nötige monatliche Sparrate (muss jedes Jahr um {angenommene_inflationsrate_in_prozent}% erhöht werden) = {colors.CRED}{0} Euro{colors.CEND}") # !!!ToDo!!!
+print("")
 print("=> Vor- und Nachteile:")
 print(f"(+) Genau wie bei der Dividenden-Strategie wird das in der Ansparphase angesparte Vermögen in der Rentephase nicht verzehrt, sondern erhalten.")
 print(f"(+) Anders als bei der Dividenden-Strategie gibt es in der Ansparphase einen echten Zinseszinseffekt.")
 print(f"(-) Anders als bei der Dividenden-Strategie beginnt das passive Einkommen erst mit Renteneintritt.")
+print(f"(-) Genau wie bei der Dividenden-Strategie sind auch hier höhere Sparbeträge nötig, da das Kapital nicht verzehrt werden soll.")
+print(f"(-) Es besteht eine Unsicherheit, wie im Jahr {renteneintritts_jahr} Kapitalerträge versteuert werden.")
 
 
 
