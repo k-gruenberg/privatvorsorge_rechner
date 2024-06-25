@@ -213,6 +213,7 @@ notwendige_wachsende_monatliche_sparrate_fuer_msci_erhaltende_monatliche_entnahm
 
 print(f"In diesem Fall muss dein monatlicher Sparbetrag konstant {notwendige_konstante_monatliche_sparrate_fuer_msci_erhaltende_monatliche_entnahme_strategie} Euro betragen, wenn du eine monatliche Rente in Höhe von {monatliche_wunschrente} Euro (brutto) entnehmen können möchtest.")
 print(f"Lässt du deinen monatlichen Sparbetrag mit der Inflation jedes Jahr um {angenommene_inflationsrate_in_prozent}% wachsen, so genügt zu Beginn auch ein monatlicher Sparbetrag von nur {notwendige_wachsende_monatliche_sparrate_fuer_msci_erhaltende_monatliche_entnahme_strategie} Euro. Auch dann erreichst du deine monatliche Wunschrente von {monatliche_wunschrente} Euro (brutto), ohne Vermögensverlust.")
+print(f"In beiden Fällen wird dein im MSCI World angespartes Vermögen zum Renteneintritt (im Jahre {renteneintritts_jahr}) {notwendiges_vermoegen_im_msci} Euro betragen.")
 print(f"Soll deine Rente hingegen {monatliche_wunschrente} Euro (netto) betragen, so ist dies abhängig davon, wie Kapitalerträge im Jahr {renteneintritts_jahr} (und darüber hinaus) besteuert werden, wir betrachten hierzu 3 Szenarien: (1) Kapitalertragssteuer, (2) Einkommensteuer, ledig, (3) Einkommensteuer, verheiratet:")
 print("")
 print(f"(0) Monatliche Rente in Höhe von {monatliche_wunschrente} Euro ({colors.CRED}brutto{colors.CEND}):")
